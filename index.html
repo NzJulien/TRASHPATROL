@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <title>Trash Patrol — Save Mbanga!</title>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#F9A825"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Trash Patrol"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- ══════════════ NAME SCREEN ══════════════ -->
+<div id="screen-name" class="screen active">
+  <div class="name-bg">
+    <div class="nb-road"></div>
+    <div class="nb-walk-char" id="nb-char">🧒🏾</div>
+  </div>
+  <div class="name-card">
+    <div class="name-title">🗑️ TRASH PATROL</div>
+    <p class="name-sub">Help clean up Mbanga town!</p>
+    <div class="name-form">
+      <label class="name-label">Enter your name:</label>
+      <input id="player-name-input" class="name-input" type="text" maxlength="14" placeholder="Your name..." autocomplete="off"/>
+      <div class="gender-row">
+        <div class="gender-btn active" id="gb-boy" onclick="selectGender('boy')">👦🏾 Boy</div>
+        <div class="gender-btn" id="gb-girl" onclick="selectGender('girl')">👧🏾 Girl</div>
+      </div>
+      <button class="btn-play" onclick="startGame()">START PATROL ▶</button>
+    </div>
+    <p class="name-err" id="name-err"></p>
+  </div>
+</div>
+
+<!-- ══════════════ GAME SCREEN ══════════════ -->
+<div id="screen-game" class="screen">
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-left">
+      <span class="hud-name" id="hud-name">Player</span>
+      <span class="hud-score">Score: <b id="hud-score">0</b></span>
+    </div>
+    <div class="hud-center">
+      <span class="hud-collected">🗑️ <b id="hud-collected">0</b>/15</span>
+    </div>
+    <div class="hud-right">
+      <span class="hud-lives" id="hud-lives">❤️❤️❤️</span>
+    </div>
+  </div>
+
+  <!-- WORLD CANVAS -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- TOUCH CONTROLS -->
+  <div class="touch-controls">
+    <div class="dpad">
+      <button class="dpad-btn up"    id="btn-up"    ontouchstart="Keys.set('up',true)"    ontouchend="Keys.set('up',false)">▲</button>
+      <div class="dpad-middle">
+        <button class="dpad-btn left"  id="btn-left"  ontouchstart="Keys.set('left',true)"  ontouchend="Keys.set('left',false)">◀</button>
+        <button class="dpad-btn right" id="btn-right" ontouchstart="Keys.set('right',true)" ontouchend="Keys.set('right',false)">▶</button>
+      </div>
+      <button class="dpad-btn down"  id="btn-down"  ontouchstart="Keys.set('down',true)"  ontouchend="Keys.set('down',false)">▼</button>
+    </div>
+    <button class="btn-pickup" id="btn-pickup" ontouchstart="World.tryPickup()"  onClick="tryPickup()">PICK UP 🤚</button>
+  </div>
+
+  <!-- PICKUP POPUP -->
+  <div class="pickup-popup" id="pickup-popup"></div>
+</div>
+
+<!-- ══════════════ WIN SCREEN ══════════════ -->
+<div id="screen-win" class="screen">
+  <div class="result-wrap win">
+    <div class="result-icon">🏆</div>
+    <h2 class="result-title">Mbanga is Clean!</h2>
+    <p class="result-msg" id="win-msg"></p>
+    <div class="fact-box">
+      <b>🌍 Real fact:</b> In Cameroon, uncollected garbage blocks drains and causes floods. Proper waste disposal reduces malaria and cholera outbreaks by up to 60%.
+    </div>
+    <div class="result-score">Score: <span id="win-score">0</span></div>
+    <button class="btn-play" onclick="restartGame()">Play Again</button>
+  </div>
+</div>
+
+<!-- ══════════════ GAMEOVER SCREEN ══════════════ -->
+<div id="screen-over" class="screen">
+  <div class="result-wrap lose">
+    <div class="result-icon">😢</div>
+    <h2 class="result-title">Game Over!</h2>
+    <p class="result-msg">You stepped on too much trash without cleaning it up! The town got too dirty. Try again!</p>
+    <div class="fact-box">
+      <b>💡 Tip:</b> Walk over trash items and press PICK UP (or Spacebar) to collect them before they pile up!
+    </div>
+    <button class="btn-play" onclick="restartGame()">Try Again</button>
+  </div>
+</div>
+
+<script src="js/game.js"></script>
+
+<!-- PWA install prompt -->
+<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1A1A2E;border-top:3px solid #F9A825;padding:10px 16px;align-items:center;justify-content:space-between;gap:10px;font-family:'Nunito',sans-serif;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:26px;">🗑️</span>
+    <div>
+      <div style="color:#F9A825;font-weight:800;font-size:13px;">Install Trash Patrol</div>
+      <div style="color:rgba(255,255,255,0.6);font-size:11px;">Play offline anytime!</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button id="install-btn" style="background:#F9A825;color:#000;border:none;border-radius:20px;padding:7px 16px;font-weight:800;font-size:12px;cursor:pointer;">Install</button>
+    <button onclick="document.getElementById('install-banner').style.display='none'" style="background:transparent;color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:7px 10px;font-size:12px;cursor:pointer;">✕</button>
+  </div>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
+}
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('install-banner').style.display = 'flex';
+});
+document.getElementById('install-btn').addEventListener('click', () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('install-banner').style.display = 'none'; });
+});
+</script>
+</body>
+</html>
