@@ -545,12 +545,17 @@ const World = (() => {
 
     canvas = document.getElementById('game-canvas');
     ctx = canvas.getContext('2d');
-    resize();
+
+    // Show the screen FIRST so the canvas has real dimensions,
+    // then resize + start the loop on the very next frame.
+    gotoScreen('screen-game');
     window.addEventListener('resize', resize);
     buildWorld();
     updateHUD();
-    gotoScreen('screen-game');
-    requestAnimationFrame(loop);
+    requestAnimationFrame(() => {
+      resize();
+      requestAnimationFrame(loop);
+    });
   }
 
   function getCarryLimit() {
