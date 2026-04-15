@@ -24,17 +24,88 @@
   </div>
   <div class="name-card">
     <div class="name-title">🗑️ TRASH PATROL</div>
-    <p class="name-sub">Help clean up Mbanga town!</p>
+    <p class="name-sub">Sort & clean up Mbanga town!</p>
     <div class="name-form">
+
+      <!-- Coins & Lives -->
+      <div style="display:flex;gap:8px;">
+        <div class="name-lives" style="flex:1;">
+          <span style="font-size:11px;color:rgba(255,255,255,0.45);font-weight:800;">LIVES</span>
+          <span id="name-lives-display">❤️❤️❤️</span>
+          <span id="name-lives-timer"></span>
+        </div>
+        <div class="name-coins-row" style="flex:1;">
+          <span>🪙</span>
+          <span id="name-coin-display">0</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:700;">coins</span>
+        </div>
+      </div>
+
       <label class="name-label">Enter your name:</label>
       <input id="player-name-input" class="name-input" type="text" maxlength="14" placeholder="Your name..." autocomplete="off"/>
+
+      <!-- Free avatars row -->
       <div class="gender-row">
         <div class="gender-btn active" id="gb-boy" onclick="selectGender('boy')">👦🏾 Boy</div>
         <div class="gender-btn" id="gb-girl" onclick="selectGender('girl')">👧🏾 Girl</div>
       </div>
-      <button class="btn-play" onclick="startGame()">START PATROL ▶</button>
+
+      <!-- Hero avatars strip -->
+      <div class="avatar-strip-label">Hero Avatars (tap to equip or buy)</div>
+      <div id="avatar-selector"></div>
+
+      <!-- Bin sorting legend -->
+      <div class="bin-legend">
+        <div class="bin-legend-item">
+          <div class="bin-dot" style="background:#4CAF50"></div>
+          <span>🌿 Organic<br>Food &amp; plants</span>
+        </div>
+        <div class="bin-legend-item">
+          <div class="bin-dot" style="background:#2196F3"></div>
+          <span>♻️ Recycle<br>Paper &amp; plastic</span>
+        </div>
+        <div class="bin-legend-item">
+          <div class="bin-dot" style="background:#F44336"></div>
+          <span>☣️ Hazardous<br>Batteries &amp; chem</span>
+        </div>
+      </div>
+
+      <div class="name-btns">
+        <button class="btn-play" onclick="startGame()">START ▶</button>
+        <button class="btn-store" onclick="openStore()">🛒 Shop</button>
+      </div>
     </div>
     <p class="name-err" id="name-err"></p>
+  </div>
+</div>
+
+<!-- ══════════════ LEVEL SELECT SCREEN ══════════════ -->
+<div id="screen-levelselect" class="screen">
+  <div class="ls-header">
+    <div class="ls-title">⚔️ SELECT LEVEL</div>
+    <div class="ls-sub">Choose your mission. Harder = more 🪙</div>
+  </div>
+  <div id="level-grid"></div>
+  <button class="btn-back" onclick="gotoScreen('screen-name')">← Back</button>
+</div>
+
+<!-- ══════════════ STORE SCREEN ══════════════ -->
+<div id="screen-store" class="screen">
+  <div class="store-header">
+    <div class="store-title">🛒 STORE</div>
+    <div class="store-coins-badge">🪙 <span id="store-coins">0</span></div>
+    <button class="btn-back" onclick="gotoScreen('screen-name')">✕</button>
+  </div>
+  <div class="store-body">
+    <div id="store-msg" style="color:#4CAF50;opacity:0;min-height:20px;"></div>
+
+    <div class="store-section-title">🦸 Hero Avatars</div>
+    <div class="store-grid" id="store-avatars"></div>
+
+    <div class="store-section-title">🧰 Tools & Gear</div>
+    <div class="store-grid" id="store-tools"></div>
+
+    <div style="height:30px;"></div>
   </div>
 </div>
 
@@ -44,13 +115,15 @@
   <div class="hud">
     <div class="hud-left">
       <span class="hud-name" id="hud-name">Player</span>
-      <span class="hud-score">Score: <b id="hud-score">0</b></span>
+      <span class="hud-score">🪙 <b id="hud-score">0</b></span>
     </div>
     <div class="hud-center">
-      <span class="hud-collected">🗑️ <b id="hud-collected">0</b>/15</span>
+      <span class="hud-collected">🗑️ <b id="hud-collected">0/15</b></span>
+      <span class="hud-level" id="hud-level">LV1</span>
     </div>
     <div class="hud-right">
       <span class="hud-lives" id="hud-lives">❤️❤️❤️</span>
+      <span class="hud-held" id="hud-held"></span>
     </div>
   </div>
 
@@ -67,7 +140,8 @@
       </div>
       <button class="dpad-btn down"  id="btn-down"  ontouchstart="Keys.set('down',true)"  ontouchend="Keys.set('down',false)">▼</button>
     </div>
-    <button class="btn-pickup" id="btn-pickup" ontouchstart="World.tryPickup()"  onClick="tryPickup()">PICK UP 🤚</button>
+    <button class="btn-pickup" id="btn-pickup"
+      ontouchstart="World.tryPickup()" onClick="World.tryPickup()">PICK UP 🤚</button>
   </div>
 
   <!-- PICKUP POPUP -->
@@ -78,13 +152,36 @@
 <div id="screen-win" class="screen">
   <div class="result-wrap win">
     <div class="result-icon">🏆</div>
-    <h2 class="result-title">Mbanga is Clean!</h2>
+    <h2 class="result-title">Level Clear!</h2>
     <p class="result-msg" id="win-msg"></p>
-    <div class="fact-box">
-      <b>🌍 Real fact:</b> In Cameroon, uncollected garbage blocks drains and causes floods. Proper waste disposal reduces malaria and cholera outbreaks by up to 60%.
+
+    <div class="sort-stats">
+      <div class="sort-stat">
+        <div class="ss-val" id="win-sorted">0</div>
+        <div class="ss-label">Sorted</div>
+      </div>
+      <div class="sort-stat">
+        <div class="ss-val" id="win-mistakes">0</div>
+        <div class="ss-label">Mistakes</div>
+      </div>
+      <div class="sort-stat">
+        <div class="ss-val" id="win-accuracy">0%</div>
+        <div class="ss-label">Accuracy</div>
+      </div>
     </div>
-    <div class="result-score">Score: <span id="win-score">0</span></div>
-    <button class="btn-play" onclick="restartGame()">Play Again</button>
+
+    <div class="result-score">Earned: <span id="win-score">🪙 0</span></div>
+    <div class="result-total-coins">Total coins: <span id="win-total-coins">0</span> 🪙</div>
+
+    <div class="fact-box">
+      <b>🌍 Real fact:</b> In Cameroon, uncollected garbage blocks drains and causes floods. Proper waste sorting reduces malaria and cholera outbreaks by up to 60% and creates jobs in recycling industries.
+    </div>
+
+    <div class="result-btns">
+      <button class="btn-next-level" id="btn-next-level" style="display:none;">Next Level →</button>
+      <button class="btn-play" onclick="restartGame()" style="flex:1;">Play Again</button>
+    </div>
+    <button class="btn-store" style="width:100%;" onclick="openStore()">🛒 Spend Coins</button>
   </div>
 </div>
 
@@ -93,28 +190,55 @@
   <div class="result-wrap lose">
     <div class="result-icon">😢</div>
     <h2 class="result-title">Game Over!</h2>
-    <p class="result-msg">You stepped on too much trash without cleaning it up! The town got too dirty. Try again!</p>
+    <p class="result-msg">You lost all your lives! The town is still messy. Remember: wrong bins cost ½ a life. Hazardous waste without protection is instant death!</p>
     <div class="fact-box">
-      <b>💡 Tip:</b> Walk over trash items and press PICK UP (or Spacebar) to collect them before they pile up!
+      <b>💡 Sorting guide:</b><br>
+      🌿 <b style="color:#4CAF50">Green bin</b> — food scraps, leaves, organic waste<br>
+      ♻️ <b style="color:#42A5F5">Blue bin</b> — paper, plastic, glass, cardboard<br>
+      ☣️ <b style="color:#EF5350">Red bin</b> — batteries, medicines, chemicals<br><br>
+      <b>⚠️ Need tools?</b> Visit the 🛒 Store! Get Hazmat Suit for Level 3+.
     </div>
-    <button class="btn-play" onclick="restartGame()">Try Again</button>
+    <div class="result-btns">
+      <button class="btn-play" onclick="restartGame()" style="flex:1;">Try Again</button>
+      <button class="btn-store" onclick="openStore()">🛒 Store</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ NO LIVES MODAL ══════════════ -->
+<div id="no-lives-modal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-icon">💔</div>
+    <div class="modal-title">No Lives Left!</div>
+    <p class="modal-msg">You're out of lives! A life replenishes every 30 minutes, or watch an ad to play now.</p>
+    <div class="modal-timer" id="lives-timer">30:00</div>
+    <button class="btn-watch-ad" onclick="watchAdForLife()">📺 Watch Ad — Get Life!</button>
+    <button class="btn-modal-close" onclick="closeNoLivesModal()">Not now</button>
   </div>
 </div>
 
 <script src="js/game.js"></script>
 
+<!-- Coin display refresh on name screen -->
+<script>
+setInterval(() => {
+  const el = document.getElementById('name-coin-display');
+  if (el && typeof Save !== 'undefined') el.textContent = Save.get('coins') || 0;
+}, 1000);
+</script>
+
 <!-- PWA install prompt -->
-<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1A1A2E;border-top:3px solid #F9A825;padding:10px 16px;align-items:center;justify-content:space-between;gap:10px;font-family:'Nunito',sans-serif;">
+<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#0D1117;border-top:2px solid #F9A825;padding:10px 16px;align-items:center;justify-content:space-between;gap:10px;font-family:'Nunito',sans-serif;">
   <div style="display:flex;align-items:center;gap:10px;">
     <span style="font-size:26px;">🗑️</span>
     <div>
       <div style="color:#F9A825;font-weight:800;font-size:13px;">Install Trash Patrol</div>
-      <div style="color:rgba(255,255,255,0.6);font-size:11px;">Play offline anytime!</div>
+      <div style="color:rgba(255,255,255,0.5);font-size:11px;">Play offline anytime!</div>
     </div>
   </div>
   <div style="display:flex;gap:8px;">
     <button id="install-btn" style="background:#F9A825;color:#000;border:none;border-radius:20px;padding:7px 16px;font-weight:800;font-size:12px;cursor:pointer;">Install</button>
-    <button onclick="document.getElementById('install-banner').style.display='none'" style="background:transparent;color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:7px 10px;font-size:12px;cursor:pointer;">✕</button>
+    <button onclick="document.getElementById('install-banner').style.display='none'" style="background:transparent;color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:7px 10px;font-size:12px;cursor:pointer;">✕</button>
   </div>
 </div>
 
